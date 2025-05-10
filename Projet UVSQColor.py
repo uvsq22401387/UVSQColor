@@ -156,12 +156,7 @@ def appliquer_flou_gaussien(intensite):
 
     for i in range(int(intensite)):
         for j in range(3):
-            flou_image[:, :, j] = convolve2d(
-                flou_image[:, :, j],
-                kernel,
-                mode='same',
-                boundary='symm'
-            )
+            flou_image[:, :, j] = convolve2d(flou_image[:, :, j], kernel, mode='same', boundary='symm')
 
     matrice_pixels = []
     for y in range(flou_image.shape[0]):
