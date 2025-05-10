@@ -2,6 +2,7 @@ import tkinter as tk
 import numpy as np
 from tkinter import filedialog, Menu
 from PIL import Image, ImageTk
+from scipy.signal import convolve2d
 
 
 fenetre_principale = None
@@ -133,32 +134,33 @@ def fenetre_effet(fenetre=""):
 def appliquer_flou_gaussien(intensite):
     global matrice_pixels
     sauvegarder_etat()
-    for _ in range(int(intensite)):
-        hauteur = len(matrice_pixels)
-        largeur = len(matrice_pixels[0])
-        noyau = [
-            [1, 2, 1],
-            [2, 4, 2],
-            [1, 2, 1]
-        ]
-        facteur = 16
-        nouvelle_matrice = [[(0, 0, 0) for _ in range(largeur)] for _ in range(hauteur)]
-        for y in range(1, hauteur - 1):
-            for x in range(1, largeur - 1):
-                r_total = g_total = b_total = 0
-                for j in range(-1, 2):
-                    for i in range(-1, 2):
-                        r, g, b = matrice_pixels[y + j][x + i]
-                        poids = noyau[j + 1][i + 1]
-                        r_total += r * poids
-                        g_total += g * poids
-                        b_total += b * poids
-                nouvelle_matrice[y][x] = (
-                    r_total // facteur,
-                    g_total // facteur,
-                    b_total // facteur
-                )
-        matrice_pixels = nouvelle_matrice
+
+    kernel = np.array([
+        [1, 2, 1],
+        [2, 4, 2],
+        [1, 2, 1]
+    ], dtype=np.float32)
+    kernel /= kernel.sum()
+
+    image_np = np.array(matrice_pixels, dtype=np.uint8)
+    flou_image = image_np.copy()
+
+    for i in range(int(intensite)):
+        for j in range(3):
+            flou_image[:, :, j] = convolve2d(
+                flou_image[:, :, j],
+                kernel,
+                mode='same',
+                boundary='symm'
+            )
+
+    matrice_pixels = []
+    for y in range(flou_image.shape[0]):
+        row = []
+        for x in range(flou_image.shape[1]):
+            row.append(tuple(flou_image[y, x].astype(int)))
+        matrice_pixels.append(row)
+
     refresh()
     dialogue_effet.destroy()
 
