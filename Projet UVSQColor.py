@@ -24,11 +24,15 @@ def ouvrir():
     largeur, hauteur = image_originale.size
     matrice_pixels = [[image_originale.getpixel((x, y)) for x in range(largeur)]for y in range(hauteur)]
     refresh()
+    activer_boutons()
+
+def activer_boutons():
 
     menu_effets.entryconfig("Filtre vert", state="normal")
     menu_effets.entryconfig("Niveaux de gris", state="normal")
     menu_fichier.entryconfig("Enregistrer", state="normal")
     menu_effets.entryconfig("Luminosité", state="normal")
+    menu_effets.entryconfig("Contraste", state="normal")
     menu_effets.entryconfig("Flou gaussien", state="normal")
     menu_effets.entryconfig("Annuler", state="normal")
 
@@ -59,6 +63,46 @@ def undo():
         matrice_pixels = historique.pop()
         refresh()
 
+def fenetre_effet(fenetre=""):
+    global dialogue_effet, matrice_affichage
+
+    dialogue_effet = tk.Toplevel(fenetre_principale)
+    frame_slider = tk.Frame(dialogue_effet)
+    frame_slider.pack(pady=10)
+    frame_boutons = tk.Frame(dialogue_effet)
+    frame_boutons.pack(side=tk.BOTTOM, pady=10)
+    dialogue_effet.grab_set()
+
+    if fenetre=="luminosité":     
+        dialogue_effet.title("Luminosité")
+        slider = tk.Scale(frame_slider, from_=0.1, to=3.0, orient=tk.HORIZONTAL, resolution=0.1, digits=2)
+        slider.set(1.0)
+        slider.pack(pady=20)
+        tk.Button(frame_boutons, text="Appliquer", command=lambda: correction_gamma(slider.get())).pack(side=tk.LEFT, padx=10)
+        tk.Button(frame_boutons, text="Annuler", command=dialogue_effet.destroy).pack(side=tk.LEFT, padx=10)
+
+    elif fenetre=="flou":
+        dialogue_effet.title("Flou Gaussien")
+        slider = tk.Scale(frame_slider, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, digits=0, label="Intensité du flou Gaussien")
+        slider.set(1)
+        slider.pack(pady=20)
+        tk.Button(frame_boutons, text="Appliquer", command=lambda: appliquer_flou_gaussien(slider.get())).pack(side=tk.LEFT, padx=10)
+        tk.Button(frame_boutons, text="Annuler", command=dialogue_effet.destroy).pack(side=tk.LEFT, padx=10)
+
+    elif fenetre == "contraste":
+        dialogue_effet.title("Contraste")
+
+        slider_contraste = tk.Scale(frame_slider, from_=0.1, to=5.0, resolution=0.1, orient=tk.HORIZONTAL, label="Contraste")
+        slider_contraste.set(1.0)
+        slider_contraste.pack(pady=20)
+
+        slider_pente = tk.Scale(frame_slider, from_=1, to=20, resolution=1, orient=tk.HORIZONTAL, label="Pente")
+        slider_pente.set(10)
+        slider_pente.pack(pady=20)
+
+        tk.Button(frame_boutons, text="Appliquer", command=lambda: sigmoide(slider_contraste.get(), slider_pente.get())).pack(side=tk.LEFT, padx=10)
+        tk.Button(frame_boutons, text="Annuler", command=dialogue_effet.destroy).pack(side=tk.LEFT, padx=10)
+
 def filtre_couleur(filtre=""):
     global matrice_pixels
     sauvegarder_etat()
@@ -78,7 +122,7 @@ def filtre_couleur(filtre=""):
     refresh()
 
 def correction_gamma(valeur):
-    global matrice_affichage
+    global matrice_affichage, matrice_pixels
     gamma = float(valeur)
     max_value = 255.0
     for y in range(len(matrice_affichage)):
@@ -89,48 +133,11 @@ def correction_gamma(valeur):
                 int(max_value * (g / max_value) ** gamma),
                 int(max_value * (b / max_value) ** gamma)
             )
-    refresh()
-
-def applique_effet():
-    global matrice_pixels, matrice_affichage
-    sauvegarder_etat()
     matrice_pixels = [row[:] for row in matrice_affichage]
     refresh()
     dialogue_effet.destroy()
 
-def annule_effet():
-    global matrice_affichage
-    matrice_affichage = [row[:] for row in matrice_pixels]
-    refresh()
-    dialogue_effet.destroy()
-
-def fenetre_effet(fenetre=""):
-    global dialogue_effet, matrice_affichage
-
-    matrice_affichage = [row[:] for row in matrice_pixels]
-
-    dialogue_effet = tk.Toplevel(fenetre_principale)
-    frame_boutons = tk.Frame(dialogue_effet)
-    frame_boutons.pack(side=tk.BOTTOM, pady=10)
-    dialogue_effet.geometry("300x150")
-    dialogue_effet.grab_set()
-
-    if fenetre=="luminosité":     
-        dialogue_effet.title("Luminosité")
-        slider = tk.Scale(dialogue_effet, from_=0.1, to=3.0, orient=tk.HORIZONTAL, resolution=0.1, digits=2, command=correction_gamma)
-        slider.set(1.0)
-        slider.pack(pady=20)
-        tk.Button(frame_boutons, text="Appliquer", command=applique_effet).pack(side=tk.LEFT, padx=10)
-        tk.Button(frame_boutons, text="Annuler", command=annule_effet).pack(side=tk.LEFT, padx=10)
-
-    elif fenetre=="flou":
-        dialogue_effet.title("Flou Gaussien")
-        slider = tk.Scale(dialogue_effet, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, digits=0, label="Intensité du flou Gaussien")
-        slider.set(1)
-        slider.pack(pady=20)
-        tk.Button(frame_boutons, text="Appliquer", command=lambda: appliquer_flou_gaussien(slider.get())).pack(side=tk.LEFT, padx=10)
-        tk.Button(frame_boutons, text="Annuler", command=dialogue_effet.destroy).pack(side=tk.LEFT, padx=10)
-
+    
 def appliquer_flou_gaussien(intensite):
     global matrice_pixels
     sauvegarder_etat()
@@ -163,6 +170,21 @@ def appliquer_flou_gaussien(intensite):
 
     refresh()
     dialogue_effet.destroy()
+
+
+def sigmoide(c, k):
+    global matrice_pixels
+
+    sauvegarder_etat()
+    matrice_pixels = [[(
+        int(1/(1+np.exp(-k*c*(r/255.0-0.5)))*255),
+        int(1/(1+np.exp(-k*c*(g/255.0-0.5)))*255),
+        int(1/(1+np.exp(-k*c*(b/255.0-0.5)))*255)
+    ) for (r, g, b) in row] for row in matrice_pixels]
+
+    refresh() 
+    dialogue_effet.destroy()
+
 
 def enregistrer():
     if not matrice_pixels:
@@ -199,6 +221,7 @@ menu_effets = Menu(barre_menu, tearoff=0)
 menu_effets.add_command(label="Filtre vert", command=lambda: filtre_couleur("vert"), state="disabled")
 menu_effets.add_command(label="Niveaux de gris", command=lambda: filtre_couleur("gris"), state="disabled")
 menu_effets.add_command(label="Luminosité", command=lambda: fenetre_effet("luminosité"), state="disabled")
+menu_effets.add_command(label="Contraste", command=lambda: fenetre_effet("contraste"), state="disabled")
 menu_effets.add_command(label="Flou gaussien", command=lambda: fenetre_effet("flou"), state="disabled")
 menu_effets.add_command(label="Annuler", command=undo, state="disabled")
 barre_menu.add_cascade(label="Effets", menu=menu_effets)
