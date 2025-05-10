@@ -72,6 +72,7 @@ def fenetre_effet(fenetre=""):
     frame_boutons = tk.Frame(dialogue_effet)
     frame_boutons.pack(side=tk.BOTTOM, pady=10)
     dialogue_effet.grab_set()
+    matrice_affichage = [row[:] for row in matrice_pixels]
 
     if fenetre=="luminosité":     
         dialogue_effet.title("Luminosité")
@@ -123,6 +124,7 @@ def filtre_couleur(filtre=""):
 
 def correction_gamma(valeur):
     global matrice_affichage, matrice_pixels
+    sauvegarder_etat()
     gamma = float(valeur)
     max_value = 255.0
     for y in range(len(matrice_affichage)):
