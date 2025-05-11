@@ -14,6 +14,7 @@ image_affichee = None
 dialogue_effet = None
 formats = "*.png;*.jpg;*.jpeg;*.bmp;*.gif"
 historique = []
+historique_annulation =[]
 
 def ouvrir():
     global image_selectionnee
@@ -53,14 +54,27 @@ def refresh():
 
 def sauvegarder_etat():
     global historique
+    global historique_annulation
     copie = [row[:] for row in image_matrice]
     historique.append(copie)
+    historique_annulation.clear
 
 def undo():
     global historique
+    global historique_annulation
     global image_matrice
     if historique:
+        historique_annulation.append([row[:] for row in image_matrice])
         image_matrice = historique.pop()
+        refresh()
+
+def redo():
+    global historique
+    global image_matrice
+    global historique_annulation
+    if historique_annulation:
+        sauvegarder_etat()
+        image_matrice = historique_annulation.pop()
         refresh()
 
 def fenetre_effet(fenetre=""):
@@ -191,6 +205,7 @@ def apercu(param1, param2, filtre):
         sigmoide(param1, param2)
     refresh()
     fenetre_principale.after(1000, undo)
+    fenetre_principale.after(1100, lambda: historique_annulation.pop() if historique_annulation else None)
     fenetre_principale.after(1500, lambda:fenetre_effet(filtre))
 
 
@@ -217,6 +232,7 @@ fenetre_principale.title("UVSQolor")
 fenetre_principale.bind('<Control-z>', lambda event: undo())
 fenetre_principale.bind('<Control-s>', lambda event:enregistrer())
 fenetre_principale.bind('<Control-n>', lambda event: ouvrir())
+fenetre_principale.bind('<Control-y>', lambda event: redo())
 
 canvas = tk.Canvas(fenetre_principale)
 canvas.pack()
@@ -246,6 +262,7 @@ menu_effets.add_cascade(label="Flou", menu=sous_menu_flou)
 barre_menu.add_cascade(label="Effets", menu=menu_effets)
 
 barre_menu.add_command(label="↶", command=undo)
+barre_menu.add_command(label="↷", command=redo)
 
 
 fenetre_principale.mainloop()
