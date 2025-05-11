@@ -15,6 +15,7 @@ dialogue_effet = None
 formats = "*.png;*.jpg;*.jpeg;*.bmp;*.gif"
 historique = []
 historique_annulation =[]
+img2_pixels = []
 
 def ouvrir():
     global image_selectionnee
@@ -32,10 +33,12 @@ def ouvrir():
 def activer_boutons():
     sous_menu_filtres.entryconfig("Filtre vert", state="normal")
     sous_menu_filtres.entryconfig("Niveaux de gris", state="normal")
+    sous_menu_filtres.entryconfig("Détection de bords", state="normal")
     sous_menu_ajustements.entryconfig("Luminosité", state="normal")
     sous_menu_ajustements.entryconfig("Contraste", state="normal")
     sous_menu_flou.entryconfig("Flou gaussien", state="normal")
     menu_fichier.entryconfig("Enregistrer", state="normal")
+    menu_effets.entryconfig("Fusionner", state="normal")
 
 def refresh():
     global image_affichee
@@ -208,6 +211,54 @@ def apercu(param1, param2, filtre):
     fenetre_principale.after(1100, lambda: historique_annulation.pop() if historique_annulation else None)
     fenetre_principale.after(1500, lambda:fenetre_effet(filtre))
 
+def fusionner():
+    global image_matrice, img2_pixels
+    sauvegarder_etat()
+    chemin = filedialog.askopenfilename(filetypes=[("Images", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
+    if not chemin:
+        return
+
+    image2 = Image.open(chemin).convert("RGB")
+    largeur1, hauteur1 = len(image_matrice[0]), len(image_matrice)
+    largeur2, hauteur2 = image2.size
+
+    if (largeur1, hauteur1) != (largeur2, hauteur2):
+        image2 = image2.resize((largeur1, hauteur1))
+
+    img2_pixels = [[image2.getpixel((x, y)) for x in range(largeur1)] for y in range(hauteur1)]
+
+    for y in range(hauteur1):
+        for x in range(largeur1):
+            r1, g1, b1 = image_matrice[y][x]
+            r2, g2, b2 = img2_pixels[y][x]
+            image_matrice[y][x] = (
+                (r1 + r2) // 2,
+                (g1 + g2) // 2,
+                (b1 + b2) // 2
+            )
+    refresh()
+
+
+def filtre_detection_bords():
+    global image_matrice
+    sauvegarder_etat()
+
+    image_numpy  = np.array(image_matrice, dtype=np.uint8)
+    image_niveaux_gris  = np.dot(image_numpy [..., :3], [0.299, 0.587, 0.114])  
+    sobel_x = np.array([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
+    sobel_y = np.array([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+
+    filtre_vertical = convolve2d(image_niveaux_gris , sobel_x, mode='same', boundary='symm')
+    filtre_horizontal = convolve2d(image_niveaux_gris , sobel_y, mode='same', boundary='symm')
+    intesite = np.sqrt(filtre_vertical**2 + filtre_horizontal**2)
+    intesite = np.clip(intesite, 0, 255).astype(np.uint8)
+
+    image_matrice = [[(val, val, val) for val in ligne] for ligne in intesite]
+    refresh()
 
 def enregistrer():
     if not image_matrice or not image_selectionnee:
@@ -245,10 +296,14 @@ menu_fichier.add_command(label="Enregistrer", command=enregistrer, state="disabl
 barre_menu.add_cascade(label="Fichier", menu=menu_fichier)
 
 menu_effets = Menu(barre_menu, tearoff=0)
+menu_effets.add_command(label="Fusionner", command=fusionner, state="disabled")
+
+
 
 sous_menu_filtres = Menu(menu_effets, tearoff=0)
 sous_menu_filtres.add_command(label="Filtre vert", command=lambda: filtre_couleur("vert"), state="disabled")
 sous_menu_filtres.add_command(label="Niveaux de gris", command=lambda: filtre_couleur("gris"), state="disabled")
+sous_menu_filtres.add_command(label="Détection de bords", command=filtre_detection_bords, state="disabled")
 menu_effets.add_cascade(label="Filtres", menu=sous_menu_filtres)
 
 sous_menu_ajustements = Menu(menu_effets, tearoff=0)
