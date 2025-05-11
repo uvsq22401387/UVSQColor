@@ -206,7 +206,7 @@ def enregistrer():
             image_finale.putpixel((j, i), image_matrice[i][j])
 
     fichier = filedialog.asksaveasfilename(defaultextension=".png",
-                                        filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg;*.jpeg"), ("BMP", "*.bmp"), ("GIF", "*.gif")],
+                                        filetypes=[("Images", formats)]
                                         title="Enregistrer l'image")
     if fichier:
         image_finale.save(fichier)
