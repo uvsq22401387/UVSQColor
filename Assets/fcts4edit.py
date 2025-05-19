@@ -15,7 +15,6 @@ formats = "*.png;*.jpg;*.jpeg;*.bmp"
 historique = []
 historique_bis = []
 
-
 def ouvrir():
     global image_selectionnee, matrice_pixels_apercu, matrice_pixels
 
@@ -66,7 +65,6 @@ def redo():
         matrice_pixels = historique_bis.pop()
         matrice_pixels_apercu = np.copy(matrice_pixels)
         refresh(matrice_pixels_apercu)
-
 
 def appliquer():
     global matrice_pixels, matrice_pixels_apercu
@@ -177,7 +175,6 @@ def filtre_detection_bords():
     matrice_pixels = np.stack([intensite]*3, axis=-1)
     refresh(matrice_pixels)
 
-
 def enregistrer():
     if matrice_pixels is None:
         return
@@ -246,6 +243,3 @@ def callback_fenetre_effet(filtre=""):
         slider = tk.Scale(dialogue_effet, from_=1, to=10, orient=tk.HORIZONTAL, length=200, resolution=1, command=lambda x: filtre_Flou(slider.get(), "flou gauss"))
         slider.set(1)
         slider.pack(pady=20)
-
-
-
