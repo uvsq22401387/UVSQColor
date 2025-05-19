@@ -15,7 +15,7 @@ def lancer_application():
     fenetre_principale.config(menu=barre_menu)
 
     menu_fichier = Menu(barre_menu, tearoff=0)
-    menu_fichier.add_command(label="Ouvrir", command=callback_ouverture_activation)
+    menu_fichier.add_command(label="Ouvrir", command=handle_ouverture_activation)
     menu_fichier.add_command(label="Enregistrer", command=enregistrer, state="disabled")
     barre_menu.add_cascade(label="Fichier", menu=menu_fichier)
 
@@ -44,7 +44,7 @@ def lancer_application():
 
     fenetre_principale.mainloop()
 
-def callback_ouverture_activation():
+def handle_ouverture_activation():
     if ouvrir():
         activer_boutons(fenetre_principale, menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajustements, sous_menu_flou)
 

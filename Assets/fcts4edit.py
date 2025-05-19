@@ -1,6 +1,6 @@
 import tkinter as tk
 import numpy as np
-from tkinter import filedialog, ttk
+from tkinter import filedialog
 from PIL import Image, ImageTk
 from scipy.signal import convolve2d
 
@@ -208,7 +208,7 @@ def callback_filtre_couleur(filtre=""):
 
 def callback_appliquer_filtre():
     appliquer()
-    confirmation = ttk.Label(fenetre_principale, text="Filtre appliqué avec succès !", background="#2a9d8f")
+    confirmation = tk.Label(fenetre_principale, text="Filtre appliqué avec succès !", background="#2a9d8f")
     confirmation.place(relx=0.5, rely=0.95, anchor="center")
     fenetre_principale.after(2000, confirmation.destroy)
 
