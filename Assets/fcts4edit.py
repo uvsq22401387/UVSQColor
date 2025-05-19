@@ -13,6 +13,7 @@ matrice_pixels_apercu = None
 dialogue_effet = None
 formats = "*.png;*.jpg;*.jpeg;*.bmp"
 historique = []
+historique_bis = []
 
 
 def ouvrir():
@@ -48,13 +49,24 @@ def sauvegarder_etat():
     global historique
     if matrice_pixels is not None:
         historique.append(np.copy(matrice_pixels))
+        historique_bis.clear()
 
 def undo():
-    global historique, matrice_pixels, matrice_pixels_apercu
+    global historique, historique_bis, matrice_pixels, matrice_pixels_apercu
     if historique:
+        historique_bis.append(np.copy(matrice_pixels))
         matrice_pixels = historique.pop()
         matrice_pixels_apercu = np.copy(matrice_pixels)
         refresh(matrice_pixels_apercu)
+
+def redo():
+    global historique_bis, matrice_pixels, matrice_pixels_apercu
+    if historique_bis:
+        historique.append(np.copy(matrice_pixels))
+        matrice_pixels = historique_bis.pop()
+        matrice_pixels_apercu = np.copy(matrice_pixels)
+        refresh(matrice_pixels_apercu)
+
 
 def appliquer():
     global matrice_pixels, matrice_pixels_apercu

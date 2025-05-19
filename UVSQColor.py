@@ -7,6 +7,7 @@ def lancer_application():
     fenetre_principale =tk.Tk()
     fenetre_principale.title("UVSQolor")
     fenetre_principale.bind('<Control-z>', lambda event: undo())
+    fenetre_principale.bind('<Control-y>', lambda event: redo())
     fenetre_principale.bind('<Control-s>', lambda event: enregistrer())
     fenetre_principale.bind('<Control-n>', lambda event: ouvrir())
 
@@ -39,6 +40,7 @@ def lancer_application():
 
     barre_menu.add_cascade(label="Effets", menu=menu_effets)
     barre_menu.add_command(label="↶", command=undo)
+    barre_menu.add_command(label="↷", command=redo)
 
     fenetre_principale.mainloop()
 
