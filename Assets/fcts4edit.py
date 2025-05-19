@@ -1,6 +1,6 @@
 import tkinter as tk
 import numpy as np
-from tkinter import filedialog, Menu
+from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
 from scipy.signal import convolve2d
 
@@ -11,7 +11,7 @@ image_affichee = None
 matrice_pixels = None 
 matrice_pixels_apercu = None
 dialogue_effet = None
-formats = "*.png;*.jpg;*.jpeg;*.bmp;*.gif"
+formats = "*.png;*.jpg;*.jpeg;*.bmp"
 historique = []
 
 
@@ -176,7 +176,8 @@ def enregistrer():
     if fichier:
         image_finale.save(fichier)
 
-def activer_boutons(menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajustements, sous_menu_flou):
+def activer_boutons(fenetre, menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajustements, sous_menu_flou):
+    global fenetre_principale
     sous_menu_filtres.entryconfig("Filtre vert", state="normal")
     sous_menu_filtres.entryconfig("Niveaux de gris", state="normal")
     sous_menu_filtres.entryconfig("Détection de bords", state="normal")
@@ -186,6 +187,7 @@ def activer_boutons(menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajus
     sous_menu_flou.entryconfig("Flou Classique", state="normal")
     menu_fichier.entryconfig("Enregistrer", state="normal")
     menu_effets.entryconfig("Fusionner", state="normal")
+    fenetre_principale=fenetre
 
 
 #callbacks____________________________
@@ -197,13 +199,19 @@ def callback_filtre_couleur(filtre=""):
         filtre_gris()
     refresh(matrice_pixels)
 
+def callback_appliquer_filtre():
+    appliquer()
+    confirmation = ttk.Label(fenetre_principale, text="Filtre appliqué avec succès !", background="#2a9d8f")
+    confirmation.place(relx=0.5, rely=0.95, anchor="center")
+    fenetre_principale.after(2000, confirmation.destroy)
+
 def callback_fenetre_effet(filtre=""):
     global dialogue_effet
 
     dialogue_effet = tk.Toplevel(fenetre_principale)
     frame_boutons = tk.Frame(dialogue_effet)
     frame_boutons.pack(side=tk.BOTTOM, pady=10)
-    tk.Button(frame_boutons, text="Appliquer", command=appliquer).pack(side=tk.LEFT, padx=10)
+    tk.Button(frame_boutons, text="Appliquer", command=callback_appliquer_filtre).pack(side=tk.LEFT, padx=10)
     tk.Button(frame_boutons, text="Annuler", command=discard).pack(side=tk.LEFT, padx=10)
     if filtre=="luminosité":     
         dialogue_effet.title("Luminosité")

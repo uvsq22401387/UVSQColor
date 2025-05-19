@@ -44,7 +44,7 @@ def lancer_application():
 
 def callback_ouverture_activation():
     if ouvrir():
-        activer_boutons(menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajustements, sous_menu_flou)
+        activer_boutons(fenetre_principale, menu_fichier, menu_effets, sous_menu_filtres, sous_menu_ajustements, sous_menu_flou)
 
 if __name__ == "__main__":
     lancer_application()
