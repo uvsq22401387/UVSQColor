@@ -14,6 +14,7 @@
 
 ## ✅ Améliorations possibles
 - [x] ↩️ **Annulation** des modifications (Ctrl+Z)
+- [x] ↪️ **Refaire** des modifications (Ctrl+Y)
 - [x] 💾 **Enregistrer** l'image finale (Crtl+S)
 
 
