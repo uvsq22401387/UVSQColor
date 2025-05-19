@@ -75,14 +75,12 @@ def filtre_vert():
     sauvegarder_etat()
     matrice_pixels[:, :, 0] = 0
     matrice_pixels[:, :, 2] = 0 
-    refresh(matrice_pixels)
 
 def filtre_gris():
     global matrice_pixels
     sauvegarder_etat()
     luminance = np.dot(matrice_pixels[...,:3], [0.299, 0.587, 0.114]).astype(np.uint8)
     matrice_pixels = np.stack([luminance]*3, axis=-1)
-    refresh(matrice_pixels)
 
 def correction_gamma(valeur):
     global matrice_pixels_apercu
