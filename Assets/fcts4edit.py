@@ -18,7 +18,7 @@ historique = []
 def ouvrir():
     global image_selectionnee, matrice_pixels_apercu, matrice_pixels
 
-    fichier = filedialog.askopenfilename(filetypes=[("Images", formats)])
+    image_selectionnee = filedialog.askopenfilename(filetypes=[("Images", formats)])
     if not fichier:
         return False
     image_pil = Image.open(fichier)
