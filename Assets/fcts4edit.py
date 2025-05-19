@@ -19,9 +19,9 @@ def ouvrir():
     global image_selectionnee, matrice_pixels_apercu, matrice_pixels
 
     image_selectionnee = filedialog.askopenfilename(filetypes=[("Images", formats)])
-    if not fichier:
+    if not image_selectionnee:
         return False
-    image_pil = Image.open(fichier)
+    image_pil = Image.open(image_selectionnee)
     image_pil = image_pil.convert('RGB') 
     matrice_pixels = np.array(image_pil)
     matrice_pixels_apercu = matrice_pixels.copy()
